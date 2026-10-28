@@ -1,0 +1,19 @@
+{
+  "format": 1,
+  "title": "Bangumi 番组计划",
+  "description": "每日放送、季度新番、排行榜、番剧搜索与详情（数据来自 bgm.tv）",
+  "updated": "2026-10-24T12:00:00Z",
+  "packages": [
+    {
+      "id": "conflux.bangumi",
+      "title": "Bangumi 番组计划",
+      "description": "每日放送、季度新番、排行榜、番剧搜索与详情（数据来自 bgm.tv）",
+      "author": "Jian Liu",
+      "version": "1.0.0",
+      "engine": 1,
+      "changelog": "初始版本：每日放送、季度新番、排行榜、搜索与详情",
+      "types": ["widget", "search", "list", "detail"],
+      "url": "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/bangumi/bangumi.js"
+    }
+  ]
+}
