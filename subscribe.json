@@ -1,0 +1,52 @@
+{
+  "format": 1,
+  "title": "Conflux 扩展示例",
+  "description": "Bangumi 番组计划、每日推荐、弹幕与 TheIntroDB 四个示例扩展。",
+  "updated": "2026-10-31T14:30:00Z",
+  "packages": [
+    {
+      "id": "conflux.bangumi",
+      "title": "Bangumi 番组计划",
+      "description": "每日放送、季度新番、排行榜、番剧搜索与详情（数据来自 bgm.tv）",
+      "author": "Jian Liu",
+      "version": "1.0.0",
+      "engine": 1,
+      "changelog": "初始版本：每日放送、季度新番、排行榜、搜索与详情",
+      "types": ["widget", "search", "list", "detail"],
+      "url": "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/bangumi/bangumi.js"
+    },
+    {
+      "id": "conflux.daily",
+      "title": "每日推荐",
+      "description": "TMDB 与 Trakt 每日推荐：正在热映、热门、今日推荐、高分、即将上映、本周热门、今日播出，以及 Trakt 期待榜、票房和本周观看。",
+      "author": "Jian Liu",
+      "version": "1.2.0",
+      "engine": 1,
+      "changelog": "初始版本：七个 TMDB 海报组件、今日播出、三个 Trakt 榜单，以及电影搜索与影视详情",
+      "types": ["widget", "search", "detail"],
+      "url": "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/daily/daily.js"
+    },
+    {
+      "id": "conflux.danmu",
+      "title": "弹幕",
+      "description": "兼容标准弹幕 API 的弹幕源。在设置里填写自己的 API 地址后，到 Extensions 里启用。",
+      "author": "Jian Liu",
+      "version": "1.0.0",
+      "engine": 1,
+      "changelog": "初始版本：弹幕匹配、搜索、剧集列表与评论加载",
+      "types": ["danmu"],
+      "url": "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/danmu/danmu.js"
+    },
+    {
+      "id": "conflux.theintrodb",
+      "title": "TheIntroDB",
+      "description": "用 TheIntroDB 查询电影和剧集的片头、回顾、片尾和预告。安装后到 Extensions 里启用。",
+      "author": "Jian Liu",
+      "version": "1.0.0",
+      "engine": 1,
+      "changelog": "初始版本：按 TMDB / IMDb / TVDB 查询片头、回顾、片尾与预告时间轴",
+      "types": ["timeline"],
+      "url": "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/theintrodb/theintrodb.js"
+    }
+  ]
+}

@@ -15,6 +15,10 @@
 
 在 App 中通过「添加订阅」填入目录的原始 URL，或用「从 URL 安装」直接安装对应的 `.js`。
 
+想一次订阅全部四个扩展，用根目录的 [`subscribe.json`](./subscribe.json)：
+
+`https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/subscribe.json`
+
 ## 本地测试
 
 ```bash
