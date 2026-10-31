@@ -1,0 +1,19 @@
+{
+  "format": 1,
+  "title": "TheIntroDB",
+  "description": "用 TheIntroDB 查询电影和剧集的片头、回顾、片尾和预告。安装后到 Extensions 里启用。",
+  "updated": "2026-10-31T13:43:00Z",
+  "packages": [
+    {
+      "id": "conflux.theintrodb",
+      "title": "TheIntroDB",
+      "description": "用 TheIntroDB 查询电影和剧集的片头、回顾、片尾和预告。安装后到 Extensions 里启用。",
+      "author": "Jian Liu",
+      "version": "1.0.0",
+      "engine": 1,
+      "changelog": "初始版本：按 TMDB / IMDb / TVDB 查询片头、回顾、片尾与预告时间轴",
+      "types": ["timeline"],
+      "url": "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/theintrodb/theintrodb.js"
+    }
+  ]
+}
