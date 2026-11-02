@@ -248,9 +248,11 @@ async function httpPostJSON(ctx, path, query, body, headers) {
   var url = path.indexOf("http") === 0 ? path : BASE + path;
   var response;
   try {
-    response = await ctx.http.post(url, JSON.stringify(body), {
+    // 运行时契约是 ctx.http.post(url, options)，body 放在 options.body（不是第二参）。
+    response = await ctx.http.post(url, {
       headers: headers || jsonHeaders(),
       query: query,
+      body: body,
       timeoutMs: REQUEST_TIMEOUT_MS,
     });
   } catch (error) {
@@ -1190,7 +1192,7 @@ definePackage({
   author: "Conflux Samples",
   site: "https://hongguoduanju.com",
   icon: "play.tv",
-  version: "1.1.0",
+  version: "1.1.1",
   engine: 1,
   permissions: {
     network: ["https://hongguoduanju.com"],
