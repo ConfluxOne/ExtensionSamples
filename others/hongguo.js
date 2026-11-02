@@ -16,6 +16,8 @@
 //   此时 playback 返回空数组（App 显示没有可用线路），不是脚本错误。
 // - 公开播放地址是普通 MP4（非 HLS / 非 CENC），带有效期，所以不做缓存、也不写进 ListItem。
 // - 所有 ref 统一使用 source "custom"，id 是红果的 series_id（纯数字字符串）。
+// - 官网没有分集剧照：detail 的每集 still 先用剧集竖版封面兜底（App 端接口的
+//   episode_cover 需要签名且会过期，不适合写进详情缓存）。
 // - 不依赖 DOM：SSR 数据用字符串定位 + JSON.parse 解析。
 
 var BASE = "https://hongguoduanju.com";
@@ -1014,8 +1016,13 @@ async function loadDetail(ctx, input) {
   var vids = stringList(series.vid_list);
   if (vids.length) {
     detail.episodes = [];
+    // 官网不提供分集剧照（App 端 video_detail 的 episode_cover 需要签名），
+    // 先统一用剧集竖版封面兜底，保证每集都有 still 可显示。
+    var episodeStill = poster || coverOf(series);
     for (var i = 0; i < vids.length; i++) {
-      detail.episodes.push({ season: 1, episode: i + 1, title: "第" + (i + 1) + "集" });
+      var episode = { season: 1, episode: i + 1, title: "第" + (i + 1) + "集" };
+      if (episodeStill) episode.still = episodeStill;
+      detail.episodes.push(episode);
     }
     // 详情页已经拿到完整分集列表，顺手写入缓存，播放时就不必再抓一次分集页。
     writeVidCache(ctx, seriesId, vids);
@@ -1192,7 +1199,7 @@ definePackage({
   author: "Conflux Samples",
   site: "https://hongguoduanju.com",
   icon: "play.tv",
-  version: "1.1.1",
+  version: "1.1.2",
   engine: 1,
   permissions: {
     network: ["https://hongguoduanju.com"],
