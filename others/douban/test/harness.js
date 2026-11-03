@@ -799,7 +799,7 @@ loadExtension();
   await test("package metadata", function () {
     assertEq(pkg.id, "conflux.douban", "id");
     assertEq(pkg.title, "豆瓣", "title");
-    assertEq(pkg.version, "1.1.0", "version");
+    assertEq(pkg.version, "1.1.1", "version");
     var rules = pkg.requestRules || [];
     assertEq(rules.length, 1, "requestRules");
     assertEq(rules[0].host, "img*.doubanio.com", "requestRules host");
@@ -862,6 +862,8 @@ loadExtension();
     assertEq(list.style, "grid", "list.style");
     assertEq(JSON.stringify((list.accepts || {}).sources || []), JSON.stringify(["douban"]), "list.accepts.sources");
     assert(typeof list.load === "function", "list.load");
+    assert(list.search && list.search.id === "search", "list.search.id 应指向同包 search");
+    assert(ext("search", list.search.id), "list.search 指向的 search 扩展存在");
 
     var detail = ext("detail", "main");
     assertEq(JSON.stringify((detail.accepts || {}).sources || []), JSON.stringify(["douban"]), "detail.accepts.sources");

@@ -25,7 +25,7 @@ Conflux 扩展包，包 ID：`conflux.bangumi`。
 | widget | `season` | 季度新番（年份、季度、排名 / 开播日期） |
 | widget | `ranking` | 番剧排行榜（可按年份筛选） |
 | search | `main` | 番剧搜索（匹配度 / 热度 / 排名 / 评分） |
-| list | `posters` | widget 标题点击后的全屏海报列表 |
+| list | `posters` | widget 标题点击后的全屏海报列表，导航栏可直接搜索番剧 |
 | detail | `main` | 简介、标签、制作人员、角色、分集、关联条目 |
 
 ## 包级设置

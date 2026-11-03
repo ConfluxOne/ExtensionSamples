@@ -14,7 +14,7 @@
 
 var ORIGIN = "https://m.douban.com";
 var SUGGEST_ORIGIN = "https://movie.douban.com";
-var VERSION = "1.1.0";
+var VERSION = "1.1.1";
 var UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36";
 
@@ -825,6 +825,8 @@ definePackage({
       title: "豆瓣列表",
       style: "grid",
       accepts: { sources: ["douban"] },
+      // 列表导航栏的搜索框；关键词走同包 search "search"，结果不分电影 / 剧集，与全局搜索一致
+      search: { id: "search" },
       load: async function (ctx, input) {
         var ref = (input && input.ref) || {};
         var raw = String(ref.id || "");

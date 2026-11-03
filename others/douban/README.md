@@ -28,7 +28,7 @@ Conflux 扩展包，包 ID：`conflux.douban`。
 | widget | `tv` | 热门剧集 |
 | widget | `tvRanked` | 剧集口碑榜（可切换华语 / 全球） |
 | search | `search` | 豆瓣搜索（电影 + 剧集，支持分页；限流时回退标题联想） |
-| list | `collection` | widget 标题点击后的全屏海报墙，按 `collection:<id>` 分页 |
+| list | `collection` | widget 标题点击后的全屏海报墙，按 `collection:<id>` 分页，导航栏可直接搜索电影与剧集 |
 | detail | `main` | 豆瓣详情：简介、类型、演职员、评分 |
 
 ## 小组件与模板的选择理由
@@ -48,7 +48,7 @@ Conflux 扩展包，包 ID：`conflux.douban`。
 
 - **搜索**：`search` 扩展调用豆瓣的 rexxar 搜索接口 `GET https://m.douban.com/rexxar/api/v2/search/subjects?q=<关键词>&start=&count=20`，只保留 `target_type` 为 `movie` / `tv` 的条目（`chart` 榜单等会被过滤），用 `types` 里影视合并的 `total` 翻页，每页 20 条、通过 `next` 继续加载。结果显示中文标题、年份、类型、评分和封面；封面是 `qnmob3-sign.doubanio.com` 的签名 URL，不需要额外请求头；实现会把 URL 里的 `imageView2` 尺寸改成 600×900，避免默认 120×180 的缩略图太糊。搜索被软限流（HTTP 403 `need_login` / 400）或第一页没有结果时，会回退到 `movie.douban.com/j/subject_suggest` 标题联想（条数少、无分页，用 `episode` 是否为正整数区分剧集）；两者都失败才抛 `rate_limited` / `unavailable`。
 - **详情**：`detail` 扩展接受 `source: "douban"` 的 `movie` / `tv` 条目，返回标题、原名、简介、`genres`、`people`（导演与演员，来自 `/movie|tv/<id>/celebrities`）和 `rating`。详情按 `ref.mediaType` 请求 `/movie/<id>` 或 `/tv/<id>`；豆瓣对剧集 id 的 `/movie/<id>` 会 301 到 `/tv/<id>`，实现再按返回的 `type` / `is_tv` 判定电影还是剧集。
-- **列表**：`list` 扩展的 `accepts.sources` 为 `["douban"]`，当条目或 widget 标题的 `ref.id` 形如 `collection:<榜单>` 时打开对应榜单的 `grid` 海报墙，并把上一页的 `next` 原样作为下一页的 `page`。
+- **列表**：`list` 扩展的 `accepts.sources` 为 `["douban"]`，当条目或 widget 标题的 `ref.id` 形如 `collection:<榜单>` 时打开对应榜单的 `grid` 海报墙，并把上一页的 `next` 原样作为下一页的 `page`。列表声明了 `search: { id: "search" }`，导航栏因此出现搜索框；检索复用同一个 search 扩展，只取第一页，清空关键词后回到榜单。
 
 ## 本地验证
 

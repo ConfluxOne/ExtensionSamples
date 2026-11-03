@@ -151,7 +151,7 @@ loadExtension();
 (async function main() {
   await test("package metadata", function () {
     assert(pkg.id === "conflux.bangumi", "id");
-    assert(pkg.version === "1.0.0", "version");
+    assert(pkg.version === "1.0.1", "version");
     assert(pkg.engine === 1, "engine");
     assert(pkg.title === "Bangumi 番组计划", "title");
     var net = (pkg.permissions && pkg.permissions.network) || [];
@@ -160,6 +160,12 @@ loadExtension();
     ["widget", "search", "list", "detail"].forEach(function (t) {
       assert(types.indexOf(t) >= 0, "missing type " + t);
     });
+  });
+
+  await test("list declares a search entry", function () {
+    var list = ext("list", "posters");
+    assert(list.search && list.search.id === "main", "list.search.id 应指向同包 search");
+    assert(ext("search", list.search.id), "list.search 指向的 search 扩展存在");
   });
 
   await test("widget daily load (live calendar)", async function () {

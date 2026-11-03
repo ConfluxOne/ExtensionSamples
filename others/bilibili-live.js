@@ -1394,7 +1394,7 @@ definePackage({
   description: "哔哩哔哩直播（live.bilibili.com）：热门与分区直播、搜索、直播间详情和多清晰度线路。",
   author: "SmartBook",
   site: "https://live.bilibili.com",
-  version: "1.0.1",
+  version: "1.0.2",
   engine: 1,
   permissions: {
     network: ["https://api.live.bilibili.com", "https://api.bilibili.com"],
@@ -1586,6 +1586,8 @@ definePackage({
       description: "分区下的二级分区或直播间列表。",
       style: "grid",
       accepts: { sources: ["custom"] },
+      // 列表导航栏的搜索框；关键词走同包 search "live"
+      search: { id: "live" },
       cache: { ttlSeconds: 300 },
       load: listAreaLoad,
     },

@@ -1199,7 +1199,7 @@ definePackage({
   author: "Conflux Samples",
   site: "https://hongguoduanju.com",
   icon: "play.tv",
-  version: "1.1.2",
+  version: "1.1.3",
   engine: 1,
   permissions: {
     network: ["https://hongguoduanju.com"],
@@ -1294,6 +1294,8 @@ definePackage({
       description: "红果短剧的榜单与分类全屏列表。",
       style: "grid",
       accepts: { sources: ["custom"] },
+      // 列表导航栏的搜索框；关键词走同包 search "main"
+      search: { id: "main" },
       cache: { ttlSeconds: 1800 },
       load: async function (ctx, input) {
         return loadList(ctx, input);

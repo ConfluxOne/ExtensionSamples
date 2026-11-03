@@ -1656,7 +1656,7 @@ definePackage({
   author: "SmartBook",
   site: "https://ddys.io",
   icon: "film.stack",
-  version: "1.0.1",
+  version: "1.0.2",
   engine: 1,
   permissions: {
     network: [
@@ -1718,6 +1718,8 @@ definePackage({
       description: "低端影视分类列表。",
       style: "grid",
       accepts: { sources: ["custom"] },
+      // 列表导航栏的搜索框；关键词走同包 search "main"
+      search: { id: "main" },
       cache: { ttlSeconds: 600 },
       load: async function (ctx, input) {
         return loadList(ctx, input);

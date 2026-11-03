@@ -5,7 +5,7 @@
  */
 
 var API = "https://api.bgm.tv";
-var VERSION = "1.0.0";
+var VERSION = "1.0.1";
 var UA = "conflux-bangumi/" + VERSION + " (https://conflux.one)";
 var PAGE_SIZE = 24;
 var SEARCH_PAGE_SIZE = 20; // /v0/search/subjects 单页最多返回 20 条
@@ -442,6 +442,8 @@ definePackage({
       title: "Bangumi 列表",
       style: "grid",
       accepts: { sources: ["custom"] },
+      // 列表导航栏的搜索框；关键词走同包 search "main"，默认排序取用户在该扩展里保存的值
+      search: { id: "main" },
       load: async function (ctx, input) {
         var id = (input && input.ref && input.ref.id) || "";
         var params = (input && input.params) || {};
