@@ -1653,10 +1653,10 @@ definePackage({
   id: "conflux.ddys",
   title: "低端影视",
   description: "低端影视（ddys.io）在线影视资源：首页 / 电影 / 剧集 / 综艺 / 动漫分类浏览、搜索、详情与在线播放。",
-  author: "SmartBook",
+  author: "Anonymous",
   site: "https://ddys.io",
   icon: "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/others/icons/ddys.png",
-  version: "1.0.3",
+  version: "1.0.4",
   engine: 1,
   permissions: {
     network: [

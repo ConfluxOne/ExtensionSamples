@@ -799,13 +799,13 @@ loadExtension();
   await test("package metadata", function () {
     assertEq(pkg.id, "conflux.douban", "id");
     assertEq(pkg.title, "豆瓣", "title");
-    assertEq(pkg.version, "1.1.2", "version");
+    assertEq(pkg.version, "1.1.3", "version");
     var rules = pkg.requestRules || [];
     assertEq(rules.length, 1, "requestRules");
     assertEq(rules[0].host, "img*.doubanio.com", "requestRules host");
     assertEq(rules[0].headers.Referer, "https://m.douban.com/", "requestRules Referer");
     assertEq(pkg.engine, 1, "engine");
-    assertEq(pkg.author, "Jian Liu", "author");
+    assertEq(pkg.author, "Anonymous", "author");
     assertEq(pkg.site, "https://www.douban.com", "site");
     assertEq(
       pkg.icon,
