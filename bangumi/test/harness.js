@@ -151,9 +151,13 @@ loadExtension();
 (async function main() {
   await test("package metadata", function () {
     assert(pkg.id === "conflux.bangumi", "id");
-    assert(pkg.version === "1.0.1", "version");
+    assert(pkg.version === "1.0.3", "version");
     assert(pkg.engine === 1, "engine");
     assert(pkg.title === "Bangumi 番组计划", "title");
+    assert(
+      pkg.icon === "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/bangumi/icon.png",
+      "icon"
+    );
     var net = (pkg.permissions && pkg.permissions.network) || [];
     assert(net.indexOf(API_ORIGIN) >= 0, "permissions.network");
     var types = pkg.extensions.map(function (e) { return e.type; });
@@ -166,6 +170,19 @@ loadExtension();
     var list = ext("list", "posters");
     assert(list.search && list.search.id === "main", "list.search.id 应指向同包 search");
     assert(ext("search", list.search.id), "list.search 指向的 search 扩展存在");
+  });
+
+  await test("widget resolveTitle follows params", function () {
+    function title(id, params) {
+      return ext("widget", id).resolveTitle(ctx(), { params: params });
+    }
+    assert(title("daily", { weekday: "1" }) === "每日放送 · 周一", "daily weekday");
+    assert(title("daily", { weekday: "today" }) === "每日放送 · 今天", "daily today");
+    assert(title("season", { year: 2023, month: "10" }) === "季度新番 · 2023 年 10 月", "season explicit");
+    var current = title("season", { month: "auto" });
+    assert(/^季度新番 · \d{4} 年 (1|4|7|10) 月$/.test(current), "season current: " + current);
+    assert(title("ranking", { year: 2023 }) === "番剧排行榜 · 2023 年", "ranking year");
+    assert(title("ranking", {}) === "番剧排行榜 · 全部年份", "ranking all years");
   });
 
   await test("widget daily load (live calendar)", async function () {

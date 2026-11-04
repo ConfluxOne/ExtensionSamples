@@ -155,9 +155,13 @@ loadExtension();
 (async function main() {
   await test("package metadata", function () {
     assert(pkg.id === "conflux.daily", "id");
-    assert(pkg.version === "1.2.0", "version");
+    assert(pkg.version === "1.2.1", "version");
     assert(pkg.engine === 1, "engine");
     assert(pkg.title === "每日推荐", "title");
+    assert(
+      pkg.icon === "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/daily/icon.png",
+      "icon"
+    );
     var net = (pkg.permissions && pkg.permissions.network) || [];
     assert(net.indexOf(ORIGIN) >= 0, "permissions.network 应包含默认 API 地址");
     var types = pkg.extensions.map(function (e) { return e.type; });

@@ -1129,6 +1129,22 @@ function normalizeCategory(value) {
   return CATEGORIES[0].value;
 }
 
+function homeTabTitle(value) {
+  var tab = normalizeHomeTab(value);
+  for (var i = 0; i < HOME_TABS.length; i++) {
+    if (HOME_TABS[i].value === tab) return HOME_TABS[i].title;
+  }
+  return HOME_TABS[0].title;
+}
+
+function categoryTitle(value) {
+  var category = normalizeCategory(value);
+  for (var i = 0; i < CATEGORIES.length; i++) {
+    if (CATEGORIES[i].value === category) return CATEGORIES[i].title;
+  }
+  return CATEGORIES[0].title;
+}
+
 // ========== placeholder 示例数据 ==========
 
 function placeholderItem(id, title, subtitle, poster, options) {
@@ -1207,7 +1223,7 @@ definePackage({
   author: "Anonymous",
   site: "https://hongguoduanju.com",
   icon: "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/others/icons/hongguo.png",
-  version: "1.1.6",
+  version: "1.1.7",
   engine: 1,
   permissions: {
     network: ["https://hongguoduanju.com"],
@@ -1231,6 +1247,9 @@ definePackage({
           options: HOME_TABS,
         },
       ],
+      resolveTitle: function (ctx, input) {
+        return homeTabTitle(paramOf(input, "tab"));
+      },
       placeholderData: homePlaceholder(),
       load: async function (ctx, input) {
         return loadHomeWidget(ctx, input);
@@ -1293,6 +1312,9 @@ definePackage({
           options: CATEGORIES,
         },
       ],
+      resolveTitle: function (ctx, input) {
+        return "红果分类 · " + categoryTitle(paramOf(input, "category"));
+      },
       placeholderData: browsePlaceholder(),
       load: async function (ctx, input) {
         return loadBrowseWidget(ctx, input);

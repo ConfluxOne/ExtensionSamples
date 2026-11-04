@@ -124,9 +124,13 @@ loadExtension();
 (async function main() {
   await test("package metadata", function () {
     assert(pkg.id === "conflux.theintrodb", "id");
-    assert(pkg.version === "1.0.0", "version");
+    assert(pkg.version === "1.0.1", "version");
     assert(pkg.engine === 1, "engine");
     assert(pkg.title === "TheIntroDB", "title");
+    assert(
+      pkg.icon === "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/theintrodb/icon.png",
+      "icon"
+    );
     var types = pkg.extensions.map(function (e) { return e.type; });
     assert(types.indexOf("timeline") >= 0, "missing timeline type");
     var net = (pkg.permissions && pkg.permissions.network) || [];

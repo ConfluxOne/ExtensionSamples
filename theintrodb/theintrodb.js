@@ -2,7 +2,8 @@ definePackage({
   id: "conflux.theintrodb",
   title: "TheIntroDB",
   description: "用 TheIntroDB 查询电影和剧集的片头、回顾、片尾和预告时间。安装后到 Extensions 里启用。",
-  version: "1.0.0",
+  icon: "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/theintrodb/icon.png",
+  version: "1.0.1",
   engine: 1,
   permissions: { network: ["https://api.theintrodb.org"] },
   extensions: [

@@ -5,7 +5,7 @@
  */
 
 var API = "https://api.bgm.tv";
-var VERSION = "1.0.1";
+var VERSION = "1.0.3";
 var UA = "conflux-bangumi/" + VERSION + " (https://conflux.one)";
 var PAGE_SIZE = 24;
 var SEARCH_PAGE_SIZE = 20; // /v0/search/subjects 单页最多返回 20 条
@@ -168,6 +168,13 @@ function currentSeason() {
   return { year: now.getFullYear(), month: m >= 10 ? 10 : m >= 7 ? 7 : m >= 4 ? 4 : 1 };
 }
 
+var WEEKDAY_TITLES = { 1: "周一", 2: "周二", 3: "周三", 4: "周四", 5: "周五", 6: "周六", 7: "周日" };
+
+function weekdayTitle(value) {
+  if (value === undefined || value === null || value === "" || value === "today") return "今天";
+  return WEEKDAY_TITLES[parseInt(value, 10)] || "今天";
+}
+
 /* ---------- 数据获取 ---------- */
 
 async function calendarItems(ctx, params) {
@@ -260,6 +267,7 @@ definePackage({
   description: "每日放送、季度新番、排行榜、番剧搜索与详情（数据来自 bgm.tv）",
   author: "Jian Liu",
   site: "https://bgm.tv",
+  icon: "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/bangumi/icon.png",
   version: VERSION,
   engine: 1,
   permissions: { network: ["https://api.bgm.tv"] },
@@ -327,6 +335,10 @@ definePackage({
       ],
       cache: { ttlSeconds: 1800 },
       placeholderData: { items: SAMPLE },
+      resolveTitle: function (ctx, input) {
+        var params = (input && input.params) || {};
+        return "每日放送 · " + weekdayTitle(params.weekday);
+      },
       load: async function (ctx, input) {
         var params = (input && input.params) || {};
         var res = await calendarItems(ctx, params);
@@ -375,6 +387,10 @@ definePackage({
         { name: "tvOnly", title: "仅 TV 动画", type: "boolean", default: true },
       ],
       placeholderData: { items: SAMPLE },
+      resolveTitle: function (ctx, input) {
+        var q = seasonQuery(input && input.params);
+        return "季度新番 · " + q.year + " 年 " + q.month + " 月";
+      },
       load: async function (ctx, input) {
         return browse(ctx, seasonQuery(input && input.params), input && input.page);
       },
@@ -392,6 +408,10 @@ definePackage({
       params: [{ name: "year", title: "年份（留空为全部）", type: "number" }],
       cache: { ttlSeconds: 21600 },
       placeholderData: { items: SAMPLE },
+      resolveTitle: function (ctx, input) {
+        var q = rankQuery(input && input.params);
+        return "番剧排行榜 · " + (q.year ? q.year + " 年" : "全部年份");
+      },
       load: async function (ctx, input) {
         return browse(ctx, rankQuery(input && input.params), input && input.page);
       },

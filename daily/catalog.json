@@ -2,16 +2,17 @@
   "format": 1,
   "title": "每日推荐",
   "description": "TMDB 与 Trakt 每日推荐：正在热映、热门、今日推荐、高分、即将上映、本周热门、今日播出，以及 Trakt 期待榜、票房和本周观看。",
-  "updated": "2026-10-31T13:43:00Z",
+  "updated": "2026-11-04T05:00:00Z",
   "packages": [
     {
       "id": "conflux.daily",
       "title": "每日推荐",
       "description": "TMDB 与 Trakt 每日推荐：正在热映、热门、今日推荐、高分、即将上映、本周热门、今日播出，以及 Trakt 期待榜、票房和本周观看。",
       "author": "Jian Liu",
-      "version": "1.2.0",
+      "icon": "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/daily/icon.png",
+      "version": "1.2.1",
       "engine": 1,
-      "changelog": "初始版本：七个 TMDB 海报组件、今日播出、三个 Trakt 榜单，以及电影搜索与影视详情",
+      "changelog": "新增自定义图标：安装时从仓库下载图标",
       "types": ["widget", "search", "detail"],
       "url": "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/daily/daily.js"
     }

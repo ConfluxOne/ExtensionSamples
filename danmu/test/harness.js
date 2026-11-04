@@ -137,9 +137,13 @@ loadExtension();
 (async function main() {
   await test("package metadata", function () {
     assert(pkg.id === "conflux.danmu", "id");
-    assert(pkg.version === "1.0.0", "version");
+    assert(pkg.version === "1.0.1", "version");
     assert(pkg.engine === 1, "engine");
     assert(pkg.title === "弹幕", "title");
+    assert(
+      pkg.icon === "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/danmu/icon.png",
+      "icon"
+    );
     var types = pkg.extensions.map(function (e) { return e.type; });
     assert(types.indexOf("danmu") >= 0, "missing danmu type");
     var names = (pkg.settings || []).map(function (s) { return s.name; });

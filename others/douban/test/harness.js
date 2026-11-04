@@ -799,7 +799,7 @@ loadExtension();
   await test("package metadata", function () {
     assertEq(pkg.id, "conflux.douban", "id");
     assertEq(pkg.title, "豆瓣", "title");
-    assertEq(pkg.version, "1.1.3", "version");
+    assertEq(pkg.version, "1.1.4", "version");
     var rules = pkg.requestRules || [];
     assertEq(rules.length, 1, "requestRules");
     assertEq(rules[0].host, "img*.doubanio.com", "requestRules host");
@@ -858,6 +858,10 @@ loadExtension();
       return o.value;
     });
     assert(values.indexOf("cn") >= 0 && values.indexOf("global") >= 0, "board options cn/global");
+
+    assert(typeof tvRanked.resolveTitle === "function", "tvRanked.resolveTitle");
+    assertEq(tvRanked.resolveTitle(ctx(), { params: { board: "cn" } }), "剧集口碑榜 · 华语", "tvRanked title cn");
+    assertEq(tvRanked.resolveTitle(ctx(), { params: { board: "global" } }), "剧集口碑榜 · 全球", "tvRanked title global");
 
     var search = ext("search", "search");
     assert(typeof search.search === "function", "search.search");

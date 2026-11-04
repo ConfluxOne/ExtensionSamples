@@ -752,7 +752,8 @@ definePackage({
   id: "conflux.daily",
   title: "每日推荐",
   description: "TMDB 与 Trakt 每日推荐：正在热映、热门、今日推荐、高分、即将上映、本周热门、今日播出，以及 Trakt 期待榜、票房和本周观看。",
-  version: "1.2.0",
+  icon: "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/daily/icon.png",
+  version: "1.2.1",
   engine: 1,
   permissions: {
     network: [

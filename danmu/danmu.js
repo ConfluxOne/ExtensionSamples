@@ -2,7 +2,8 @@ definePackage({
   id: "conflux.danmu",
   title: "弹幕",
   description: "兼容标准弹幕 API 的弹幕源。在设置里填写自己的 API 地址后，到 Extensions 里启用。",
-  version: "1.0.0",
+  icon: "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/danmu/icon.png",
+  version: "1.0.1",
   engine: 1,
   permissions: { network: ["https://", "http://"] },
   settings: [

@@ -14,7 +14,7 @@
 
 var ORIGIN = "https://m.douban.com";
 var SUGGEST_ORIGIN = "https://movie.douban.com";
-var VERSION = "1.1.3";
+var VERSION = "1.1.4";
 var UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36";
 
@@ -801,6 +801,10 @@ definePackage({
       ],
       cache: { ttlSeconds: 21600 },
       placeholder: placeholderTV,
+      resolveTitle: function (ctx, input) {
+        var board = input && input.params ? input.params.board : undefined;
+        return "剧集口碑榜 · " + (board === "global" ? "全球" : "华语");
+      },
       load: async function (ctx, input) {
         return loadCollectionPage(ctx, input, "tvRanked");
       },

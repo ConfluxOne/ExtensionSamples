@@ -1656,7 +1656,7 @@ definePackage({
   author: "Anonymous",
   site: "https://ddys.io",
   icon: "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/others/icons/ddys.png",
-  version: "1.0.4",
+  version: "1.0.5",
   engine: 1,
   permissions: {
     network: [
@@ -1706,6 +1706,10 @@ definePackage({
           ],
         },
       ],
+      resolveTitle: function (ctx, input) {
+        var category = categoryFrom((input && input.params) || {});
+        return category.value === "home" ? "低端影视" : "低端影视 · " + category.title;
+      },
       placeholderData: placeholderContent(),
       load: async function (ctx, input) {
         return loadWidget(ctx, input);

@@ -101,6 +101,14 @@ function safeString(value) {
   return "";
 }
 
+function areaTitle(value) {
+  var area = safeString(value);
+  for (var i = 0; i < AREA_OPTIONS.length; i++) {
+    if (AREA_OPTIONS[i].value === area) return AREA_OPTIONS[i].title;
+  }
+  return AREA_OPTIONS[0].title;
+}
+
 function trimText(value) {
   return safeString(value).replace(/^[\s\u3000]+|[\s\u3000]+$/g, "");
 }
@@ -1395,7 +1403,7 @@ definePackage({
   author: "Anonymous",
   site: "https://live.bilibili.com",
   icon: "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/others/icons/bilibili-live.png",
-  version: "1.0.4",
+  version: "1.0.5",
   engine: 1,
   permissions: {
     network: ["https://api.live.bilibili.com", "https://api.bilibili.com"],
@@ -1439,6 +1447,9 @@ definePackage({
           options: AREA_OPTIONS,
         },
       ],
+      resolveTitle: function (ctx, input) {
+        return "热门直播 · " + areaTitle(input && input.params ? input.params.area : null);
+      },
       cache: { ttlSeconds: 300 },
       placeholderData: {
         items: [

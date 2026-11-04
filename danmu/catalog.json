@@ -2,16 +2,17 @@
   "format": 1,
   "title": "弹幕",
   "description": "兼容标准弹幕 API 的弹幕源。在设置里填写自己的 API 地址后，到 Extensions 里启用。",
-  "updated": "2026-10-31T13:43:00Z",
+  "updated": "2026-11-04T05:00:00Z",
   "packages": [
     {
       "id": "conflux.danmu",
       "title": "弹幕",
       "description": "兼容标准弹幕 API 的弹幕源。在设置里填写自己的 API 地址后，到 Extensions 里启用。",
       "author": "Jian Liu",
-      "version": "1.0.0",
+      "icon": "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/danmu/icon.png",
+      "version": "1.0.1",
       "engine": 1,
-      "changelog": "初始版本：弹幕匹配、搜索、剧集列表与评论加载",
+      "changelog": "新增自定义图标：安装时从仓库下载图标",
       "types": ["danmu"],
       "url": "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/danmu/danmu.js"
     }
