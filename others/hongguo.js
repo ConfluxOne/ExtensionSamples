@@ -1113,6 +1113,14 @@ function normalizeBoard(value) {
   return RANK_BOARDS[0].value;
 }
 
+function boardTitle(value) {
+  var board = normalizeBoard(value);
+  for (var i = 0; i < RANK_BOARDS.length; i++) {
+    if (RANK_BOARDS[i].value === board) return RANK_BOARDS[i].title;
+  }
+  return RANK_BOARDS[0].title;
+}
+
 function normalizeCategory(value) {
   var text = trim(value);
   for (var i = 0; i < CATEGORIES.length; i++) {
@@ -1199,7 +1207,7 @@ definePackage({
   author: "Conflux Samples",
   site: "https://hongguoduanju.com",
   icon: "play.tv",
-  version: "1.1.3",
+  version: "1.1.4",
   engine: 1,
   permissions: {
     network: ["https://hongguoduanju.com"],
@@ -1260,6 +1268,9 @@ definePackage({
         },
       ],
       placeholderData: rankingPlaceholder(),
+      resolveTitle: function (ctx, input) {
+        return boardTitle(paramOf(input, "board"));
+      },
       load: async function (ctx, input) {
         return loadRankWidget(ctx, input);
       },
