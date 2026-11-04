@@ -14,7 +14,7 @@
 
 var ORIGIN = "https://m.douban.com";
 var SUGGEST_ORIGIN = "https://movie.douban.com";
-var VERSION = "1.1.1";
+var VERSION = "1.1.2";
 var UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36";
 
@@ -679,6 +679,7 @@ definePackage({
   description: "豆瓣电影与剧集：正在热映、Top250、一周口碑榜、热门电影与剧集、搜索和详情（数据来自豆瓣，非官方接口）。",
   author: "Jian Liu",
   site: "https://www.douban.com",
+  icon: "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/others/icons/douban.png",
   version: VERSION,
   engine: 1,
   permissions: {

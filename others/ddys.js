@@ -1655,8 +1655,8 @@ definePackage({
   description: "低端影视（ddys.io）在线影视资源：首页 / 电影 / 剧集 / 综艺 / 动漫分类浏览、搜索、详情与在线播放。",
   author: "SmartBook",
   site: "https://ddys.io",
-  icon: "film.stack",
-  version: "1.0.2",
+  icon: "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/others/icons/ddys.png",
+  version: "1.0.3",
   engine: 1,
   permissions: {
     network: [

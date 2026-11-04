@@ -799,7 +799,7 @@ loadExtension();
   await test("package metadata", function () {
     assertEq(pkg.id, "conflux.douban", "id");
     assertEq(pkg.title, "豆瓣", "title");
-    assertEq(pkg.version, "1.1.1", "version");
+    assertEq(pkg.version, "1.1.2", "version");
     var rules = pkg.requestRules || [];
     assertEq(rules.length, 1, "requestRules");
     assertEq(rules[0].host, "img*.doubanio.com", "requestRules host");
@@ -807,6 +807,11 @@ loadExtension();
     assertEq(pkg.engine, 1, "engine");
     assertEq(pkg.author, "Jian Liu", "author");
     assertEq(pkg.site, "https://www.douban.com", "site");
+    assertEq(
+      pkg.icon,
+      "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/others/icons/douban.png",
+      "icon"
+    );
     assert(typeof pkg.description === "string" && pkg.description.length > 0, "description");
 
     var net = (pkg.permissions && pkg.permissions.network) || [];

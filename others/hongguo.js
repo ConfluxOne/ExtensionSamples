@@ -1206,8 +1206,8 @@ definePackage({
   description: "红果短剧（hongguoduanju.com）：精选轮播、热播推荐、热播榜、分类浏览、搜索、详情与官网公开线路播放。",
   author: "Conflux Samples",
   site: "https://hongguoduanju.com",
-  icon: "play.tv",
-  version: "1.1.4",
+  icon: "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/others/icons/hongguo.png",
+  version: "1.1.5",
   engine: 1,
   permissions: {
     network: ["https://hongguoduanju.com"],

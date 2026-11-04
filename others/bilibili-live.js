@@ -1394,7 +1394,8 @@ definePackage({
   description: "哔哩哔哩直播（live.bilibili.com）：热门与分区直播、搜索、直播间详情和多清晰度线路。",
   author: "SmartBook",
   site: "https://live.bilibili.com",
-  version: "1.0.2",
+  icon: "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/others/icons/bilibili-live.png",
+  version: "1.0.3",
   engine: 1,
   permissions: {
     network: ["https://api.live.bilibili.com", "https://api.bilibili.com"],
