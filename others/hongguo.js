@@ -14,6 +14,7 @@
 // 说明：
 // - 官网只对前若干集提供公开播放地址，其余集返回 403 `public_fallback_unavailable`；
 //   此时 playback 返回空数组（App 显示没有可用线路），不是脚本错误。
+//   详情里超出该范围的分集用 VIP badge 标出，集数取自详情 SSR 的 `visible_episode_cnt`。
 // - 公开播放地址是普通 MP4（非 HLS / 非 CENC），带有效期，所以不做缓存、也不写进 ListItem。
 // - 所有 ref 统一使用 source "custom"，id 是红果的 series_id（纯数字字符串）。
 // - 官网没有分集剧照：detail 的每集 still 先用剧集竖版封面兜底（App 端接口的
@@ -80,6 +81,18 @@ function positiveRating(value) {
   var number = Number(value);
   if (!isFiniteNumber(number) || number <= 0 || number > 10) return null;
   return Math.round(number * 10) / 10;
+}
+
+// 官网在详情 SSR 的 `req.libraConfig.visible_episode_cnt` 里声明公开可播的集数
+//（形如 `{ val: 5 }`）。缺失或异常时按「全部可播」处理，避免误标。
+function visibleEpisodeCount(page, total) {
+  var config = page && page.req && page.req.libraConfig ? page.req.libraConfig.visible_episode_cnt : null;
+  var raw = config && typeof config === "object" ? config.val : config;
+  var count = Number(raw);
+  if (!isFiniteNumber(count)) return total;
+  count = Math.floor(count);
+  if (count < 0 || count > total) return total;
+  return count;
 }
 
 function truncate(value, limit) {
@@ -1014,6 +1027,8 @@ async function loadDetail(ctx, input) {
   if (people.length) detail.people = people;
 
   var vids = stringList(series.vid_list);
+  // 官网只公开前若干集，超出部分没有播放地址，用 VIP 标签标出。
+  var visibleCount = visibleEpisodeCount(page, vids.length);
   if (vids.length) {
     detail.episodes = [];
     // 官网不提供分集剧照（App 端 video_detail 的 episode_cover 需要签名），
@@ -1022,13 +1037,14 @@ async function loadDetail(ctx, input) {
     for (var i = 0; i < vids.length; i++) {
       var episode = { season: 1, episode: i + 1, title: "第" + (i + 1) + "集" };
       if (episodeStill) episode.still = episodeStill;
+      if (i + 1 > visibleCount) episode.badges = [{ title: "VIP", color: "#F5C518" }];
       detail.episodes.push(episode);
     }
     // 详情页已经拿到完整分集列表，顺手写入缓存，播放时就不必再抓一次分集页。
     writeVidCache(ctx, seriesId, vids);
   }
 
-  console.log("detail", seriesId, title, "episodes", vids.length);
+  console.log("detail", seriesId, title, "episodes", vids.length, "visible", visibleCount);
   return detail;
 }
 
@@ -1223,7 +1239,7 @@ definePackage({
   author: "Anonymous",
   site: "https://hongguoduanju.com",
   icon: "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/others/icons/hongguo.png",
-  version: "1.1.7",
+  version: "1.1.8",
   engine: 1,
   permissions: {
     network: ["https://hongguoduanju.com"],
