@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "红果短剧 App 线路本地解析服务：用 openhongguo SDK 返回播放地址和 content key，交给 Conflux CorePlayer 解密。",
+  "description": "红果短剧增强线路本地解析服务：用 openhongguo SDK 返回播放地址和 content key，交给播放器解密。",
   "scripts": {
     "start": "node relay.mjs"
   },

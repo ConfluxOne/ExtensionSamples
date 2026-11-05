@@ -1,9 +1,8 @@
-// 红果短剧 · App 线路（Conflux Extension）
+// 红果短剧 · 增强线路（Extension）
 //
 // 与 ../hongguo.js 共用官网数据（widget / 搜索 / 列表 / 详情），
-// 区别只在 playback：优先通过本机 relay 用 openhongguo SDK 解析红果 App 的
-// 播放模型与 content key，把 URL + options.decryptionKey 交给 Conflux CorePlayer，
-// 由内置 FFmpeg 直接解 CENC（cenc-aes-ctr），因此可以播全部分集。
+// 区别只在 playback：优先通过本机 relay 用 openhongguo SDK 解析官方接口的
+// 播放模型与 content key，返回 URL + options.decryptionKey，因此可以播全部分集。
 //
 // relay 只负责解析，不做解密、不转码；relay 不可用时回退官网公开线路（只有前若干集）。
 // relay 代码见同目录 relay.mjs，默认 http://127.0.0.1:8787。
@@ -17,7 +16,7 @@
 // - 官网公开播放 `/api/video/protected/fallback-play-info`：仅作 relay 不可用时的兜底
 //
 // 说明：
-// - `options.decryptionKey` 只对 CorePlayer 生效；Aether / mpv / `player: "system"` 不使用。
+// - `options.decryptionKey` 是 PlaybackSource 的可选字段；空字符串视为没写。
 // - 官网没有分集剧照：detail 的每集 still 用剧集竖版封面兜底。
 // - 所有 ref 统一使用 source "custom"，id 是红果的 series_id（纯数字字符串）。
 // - 不依赖 DOM：SSR 数据用字符串定位 + JSON.parse 解析。
@@ -1020,7 +1019,7 @@ async function loadDetail(ctx, input) {
   var vids = stringList(series.vid_list);
   if (vids.length) {
     detail.episodes = [];
-    // 官网不提供分集剧照（App 端 video_detail 的 episode_cover 需要签名），
+    // 官网不提供分集剧照（上游 video_detail 的 episode_cover 需要签名），
     // 先统一用剧集竖版封面兜底，保证每集都有 still 可显示。
     var episodeStill = poster || coverOf(series);
     for (var i = 0; i < vids.length; i++) {
@@ -1036,7 +1035,7 @@ async function loadDetail(ctx, input) {
   return detail;
 }
 
-// ========== App 线路 relay ==========
+// ========== 增强线路 relay ==========
 
 function normalizedDecryptionKey(value) {
   var key = trim(value);
@@ -1046,7 +1045,7 @@ function normalizedDecryptionKey(value) {
 
 function relayBase(ctx) {
   var settings = ctx && ctx.settings ? ctx.settings : {};
-  if (settings.useAppLine === false) return "";
+  if (settings.useEnhancedLine === false) return "";
   var raw = trim(settings.relayUrl);
   if (!raw) raw = RELAY_DEFAULT_URL;
   if (!/^https?:\/\//i.test(raw)) return "";
@@ -1091,7 +1090,7 @@ function relayPlaybackSources(data) {
     var item = valid[j];
     var source = {
       id: "app-" + item.definition,
-      name: "红果 App " + item.definition,
+      name: "红果增强 " + item.definition,
       url: item.url,
     };
     if (isFiniteNumber(item.size) && item.size > 0) {
@@ -1122,25 +1121,25 @@ async function tryRelayPlayback(ctx, relayUrl, seriesId, episode, vid) {
     });
   } catch (error) {
     result.error = "relay 无法访问：" + describeError(error);
-    console.warn("红果 App 线路 " + result.error);
+    console.warn("红果增强线路 " + result.error);
     return result;
   }
   if (response.status !== 200) {
     result.error = "relay 返回 HTTP " + response.status;
     if (response.status === 401) result.error += "（检查 relayToken）";
-    console.warn("红果 App 线路 " + result.error);
+    console.warn("红果增强线路 " + result.error);
     return result;
   }
   var data = response.json;
   if (!data || typeof data !== "object") {
     result.error = "relay 返回的不是 JSON";
-    console.warn("红果 App 线路 " + result.error);
+    console.warn("红果增强线路 " + result.error);
     return result;
   }
   result.sources = relayPlaybackSources(data);
   if (result.sources.length === 0) {
     result.error = "relay 没有返回可用地址";
-    console.warn("红果 App 线路 " + result.error);
+    console.warn("红果增强线路 " + result.error);
   }
   return result;
 }
@@ -1160,7 +1159,7 @@ async function playbackSources(ctx, input) {
   if (relayUrl) {
     var appAttempt = await tryRelayPlayback(ctx, relayUrl, seriesId, episode, "");
     if (appAttempt.sources.length > 0) {
-      console.log("app playback", seriesId, episode, appAttempt.sources.length, "sources");
+      console.log("relay playback", seriesId, episode, appAttempt.sources.length, "sources");
       return appAttempt.sources;
     }
     relayError = appAttempt.error;
@@ -1169,7 +1168,7 @@ async function playbackSources(ctx, input) {
   var vids = await loadVidList(ctx, seriesId);
   if (vids.length === 0) {
     console.warn("红果短剧没有找到分集列表：" + seriesId);
-    if (relayError) throw unavailable("App 线路 relay 不可用，且官网分集页不可用：" + relayError);
+    if (relayError) throw unavailable("增强线路 relay 不可用，且官网分集页不可用：" + relayError);
     return [];
   }
   if (episode > vids.length) {
@@ -1183,7 +1182,7 @@ async function playbackSources(ctx, input) {
   if (relayUrl) {
     var vidAttempt = await tryRelayPlayback(ctx, relayUrl, seriesId, episode, vid);
     if (vidAttempt.sources.length > 0) {
-      console.log("app playback", seriesId, episode, vidAttempt.sources.length, "sources (vid)");
+      console.log("relay playback", seriesId, episode, vidAttempt.sources.length, "sources (vid)");
       return vidAttempt.sources;
     }
     if (!relayError) relayError = vidAttempt.error;
@@ -1198,7 +1197,7 @@ async function playbackSources(ctx, input) {
   }
   if (!playback) {
     if (relayUrl) {
-      throw unavailable("App 线路 relay 没有返回播放地址（" + (relayError || "未知原因") + "），且这一集没有官网公开线路。请确认 relay.mjs 已启动、地址和令牌正确。");
+      throw unavailable("增强线路 relay 没有返回播放地址（" + (relayError || "未知原因") + "），且这一集没有官网公开线路。请确认 relay.mjs 已启动、地址和令牌正确。");
     }
     return [];
   }
@@ -1366,12 +1365,12 @@ function browsePlaceholder() {
 
 definePackage({
   id: "conflux.hongguo.app",
-  title: "红果短剧 · App 线路",
-  description: "红果短剧（hongguoduanju.com）：官网数据 + 本地 relay 解析 App 线路，用 options.decryptionKey 播放全部分集；relay 不可用时回退官网公开线路。",
+  title: "红果短剧 · 增强线路",
+  description: "红果短剧（hongguoduanju.com）：官网数据 + 本地 relay 解析，可播放全部分集；relay 不可用时回退官网公开线路。",
   author: "Anonymous",
   site: "https://hongguoduanju.com",
   icon: "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/others/icons/hongguo.png",
-  version: "1.0.1",
+  version: "1.0.2",
   engine: 1,
   permissions: {
     // 后者是本地 relay 的前缀放行：http://127.0.0.1 可覆盖任意端口。
@@ -1393,8 +1392,8 @@ definePackage({
       default: "",
     },
     {
-      name: "useAppLine",
-      title: "优先 App 线路",
+      name: "useEnhancedLine",
+      title: "优先增强线路",
       description: "关闭后只使用官网公开线路。",
       type: "boolean",
       default: true,
@@ -1404,7 +1403,7 @@ definePackage({
     {
       type: "widget",
       id: "home",
-      title: "红果热播 · App",
+      title: "红果热播 · 增强",
       description: "红果短剧首页的热播推荐，可在实例里选择频道。",
       template: "poster-rail",
       families: ["extraLarge"],
@@ -1429,7 +1428,7 @@ definePackage({
     {
       type: "widget",
       id: "featured",
-      title: "红果精选 · App",
+      title: "红果精选 · 增强",
       description: "红果短剧首页的焦点推荐，横向分页大海报。",
       template: "poster-pager",
       families: ["extraLarge"],
@@ -1442,7 +1441,7 @@ definePackage({
     {
       type: "widget",
       id: "ranking",
-      title: "红果热播榜 · App",
+      title: "红果热播榜 · 增强",
       description: "红果短剧热播榜，可在实例里选择榜单。",
       template: "ranked-list",
       header: "list",
@@ -1468,7 +1467,7 @@ definePackage({
     {
       type: "widget",
       id: "browse",
-      title: "红果分类 · App",
+      title: "红果分类 · 增强",
       description: "按真人剧、漫剧、漫画、AI 剧浏览红果短剧。",
       template: "poster-grid",
       header: "list",
@@ -1494,7 +1493,7 @@ definePackage({
     {
       type: "list",
       id: "browse",
-      title: "红果短剧列表 · App",
+      title: "红果短剧列表 · 增强",
       description: "红果短剧的榜单与分类全屏列表。",
       style: "grid",
       accepts: { sources: ["custom"] },
@@ -1508,7 +1507,7 @@ definePackage({
     {
       type: "search",
       id: "main",
-      title: "红果短剧 · App",
+      title: "红果短剧 · 增强",
       description: "搜索红果短剧。",
       cache: { ttlSeconds: 600 },
       search: async function (ctx, input) {
@@ -1518,7 +1517,7 @@ definePackage({
     {
       type: "detail",
       id: "main",
-      title: "红果短剧详情 · App",
+      title: "红果短剧详情 · 增强",
       description: "读取红果短剧的标题、简介、评分、标签、演职员与全部剧集。",
       accepts: { sources: ["custom"] },
       cache: { ttlSeconds: 600 },
@@ -1529,8 +1528,8 @@ definePackage({
     {
       type: "playback",
       id: "main",
-      title: "红果 App 线路",
-      description: "优先通过本地 relay 解析 App 线路并用 decryptionKey 解密，relay 不可用时回退官网公开线路。",
+      title: "红果增强线路",
+      description: "优先通过本地 relay 解析，relay 不可用时回退官网公开线路。",
       accepts: { sources: ["custom"] },
       cache: { ttlSeconds: 0 },
       sources: async function (ctx, input) {

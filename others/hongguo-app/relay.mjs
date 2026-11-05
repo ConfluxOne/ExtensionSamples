@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
- * 红果 App 线路 relay
+ * 红果增强线路 relay
  *
- * 只做一件事：用 openhongguo SDK（匿名设备）解析某一集的 App 播放模型，
- * 返回播放地址和 content key。解密由 Conflux 的 CorePlayer（FFmpeg）用
- * options.decryptionKey 完成，这里不下载、不解密、不转码。
+ * 只做一件事：用 openhongguo SDK（匿名设备）解析某一集的官方播放模型，
+ * 返回播放地址和 content key。解密由播放器根据 options.decryptionKey
+ * 处理，这里不下载、不解密、不转码。
  *
  * 依赖 openhongguo（不是 npm 包，需要从源码构建）：
  *   cd openhongguo/bindings/node
@@ -199,7 +199,7 @@ const server = createServer(async (request, response) => {
       return payload(vid, seriesId, result);
     });
     if (!resolved.key && resolved.protected) {
-      // 没有 key 的加密流在 CorePlayer 里也解不了，早点告知扩展。
+      // 没有 key 的加密流在播放器里也解不了，早点告知扩展。
       return send(response, 502, { error: { code: "NO_CONTENT_KEY", message: "播放模型没有 content key" } });
     }
     return send(response, 200, resolved);
@@ -212,7 +212,7 @@ const server = createServer(async (request, response) => {
 });
 
 server.listen(PORT, HOST, () => {
-  console.log(`[relay] 红果 App 线路 relay: http://${HOST}:${PORT}`);
+  console.log(`[relay] 红果增强线路 relay: http://${HOST}:${PORT}`);
   console.log(`[relay] profile: ${PROFILE}`);
   if (TOKEN) console.log("[relay] 已启用 RELAY_TOKEN");
 });

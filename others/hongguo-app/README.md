@@ -1,23 +1,23 @@
-# 红果短剧 · App 线路
+# 红果短剧 · 增强线路
 
-Conflux 扩展包，包 ID：`conflux.hongguo.app`。
+扩展包，包 ID：`conflux.hongguo.app`。
 
 它和 [`../hongguo.js`](../hongguo.js) 使用同一套官网数据（widget / 搜索 / 列表 / 详情），区别只在 **playback**：
 
-- 优先通过本机 relay 用 [openhongguo](https://github.com/beilunyang/openhongguo) 解析红果 App 的播放模型和 content key；
-- 把 `url` + `options.decryptionKey` 交给 Conflux CorePlayer，由内置 FFmpeg 直接解 **CENC（cenc-aes-ctr）**；
-- 因此官网只公开前几集也没关系，relay 解析的是 App 接口，可以播全部分集；
+- 优先通过本机 relay 用 [openhongguo](https://github.com/beilunyang/openhongguo) 解析官方接口的播放模型和 content key；
+- 把 `url` + `options.decryptionKey` 作为 PlaybackSource 返回；
+- 因此官网只公开前几集也没关系，relay 解析的是官方接口，可以播全部分集；
 - relay 不可用时回退官网公开线路（只有前若干集）。
 
-relay 只负责**解析**，不下载、不解密、不转码。视频解密发生在 Conflux 的播放器进程里。
+relay 只负责**解析**，不下载、不解密、不转码。解密由播放器按 `options.decryptionKey` 处理。
 
-> 注意：App 线路是**同源包**解析。只有从本包（`conflux.hongguo.app`）的 widget / 搜索打开的内容才会走本包的 playback；从旧包 `conflux.hongguo` 打开的内容仍然走旧包的官网公开线路。首页 widget 标题都带「· App」后缀，添加 widget 时请选这些。
+> 注意：增强线路是**同源包**解析。只有从本包（`conflux.hongguo.app`）的 widget / 搜索打开的内容才会走本包的 playback；从旧包 `conflux.hongguo` 打开的内容仍然走旧包的官网公开线路。首页 widget 标题都带「· 增强」后缀，添加 widget 时请选这些。
 
 > 免责声明：仅供个人学习与研究。内容版权归权利人所有，请勿用于批量抓取或传播。
 
 ## 前提
 
-- Conflux 已包含 `PlaybackSource.options.decryptionKey` 支持（`decryptionKey` 只对 CorePlayer 生效，Aether / mpv / `player: "system"` 不使用）。
+- 播放器支持 `PlaybackSource.options.decryptionKey`。
 - Node.js 20+。
 - 能从源码构建 openhongguo（需要 Go 1.22+）。
 
@@ -96,7 +96,7 @@ curl 'http://127.0.0.1:8787/resolve?series_id=7621200213801176126&episode=20'
 
 ## 3. 安装扩展
 
-App → Extensions → 从文件安装 [`hongguo-app.js`](./hongguo-app.js)，或放到 HTTPS 地址后从 URL 安装。
+在扩展管理里从文件安装 [`hongguo-app.js`](./hongguo-app.js)，或放到 HTTPS 地址后从 URL 安装。
 
 包设置：
 
@@ -104,26 +104,26 @@ App → Extensions → 从文件安装 [`hongguo-app.js`](./hongguo-app.js)，�
 | --- | --- | --- |
 | 本地解析服务 | `http://127.0.0.1:8787` | relay 地址 |
 | relay 访问令牌 | 空 | relay 设置 `RELAY_TOKEN` 时填写 |
-| 优先 App 线路 | 开 | 关掉后只走官网公开线路 |
+| 优先增强线路 | 开 | 关掉后只走官网公开线路 |
 
 扩展的 `permissions.network` 声明了 `http://127.0.0.1` / `http://localhost` 前缀，因此 relay 可以换端口；如果 relay 不在本机，需要相应修改权限，且不建议这样做。
 
 ## 播放流程
 
 ```
-Conflux 播放按钮
+播放按钮
   → 扩展 playback.sources
   → GET http://127.0.0.1:8787/resolve?vid=...
-  → relay: openhongguo 匿名设备 → App 播放模型 + content key
+  → relay: openhongguo 匿名设备 → 播放模型 + content key
   → 扩展返回 PlaybackSource { url, options: { decryptionKey } }
-  → Conflux CorePlayer / FFmpeg: -decryption_key，直接解 CENC
+  → 播放器按 options.decryptionKey 处理
 ```
 
 ## 常见问题
 
-- **第 6 集以后没有播放资源**：先确认从新包的「· App」widget 打开；再确认 relay 在跑：
-  `curl http://127.0.0.1:8787/health`。旧包 `conflux.hongguo` 的卡片不会走 App 线路。
+- **第 6 集以后没有播放资源**：先确认从新包的「· 增强」widget 打开；再确认 relay 在跑：
+  `curl http://127.0.0.1:8787/health`。旧包 `conflux.hongguo` 的卡片不会走增强线路。
 - **relay 返回 503 / ANONYMOUS_LIMITED**：匿名设备额度用尽，relay 会自动 `resetDevice` 重试；仍失败时删除 `relay-data/anonymous.json` 再试。
-- **能显示线路但播放失败**：确认 Conflux 的播放核心是 CorePlayer（默认），不要用 Aether / mpv；并确认 App 版本已包含 `options.decryptionKey`。
-- **没有 App 线路，只有官网线路**：relay 没启动、地址/端口不对、token 不匹配，或包设置里关闭了「优先 App 线路」。扩展调试页会出现「app playback」或「红果 App 线路 relay 无法访问 / HTTP xxx」日志。
+- **能显示线路但播放失败**：确认播放器支持 `options.decryptionKey`。
+- **没有增强线路，只有官网线路**：relay 没启动、地址/端口不对、token 不匹配，或包设置里关闭了「优先增强线路」。扩展调试页会出现「relay playback」或「红果增强线路 relay 无法访问 / HTTP xxx」日志。
 - **官网公开线路仍然只有前几集**：这是兜底路径，属于预期行为。
