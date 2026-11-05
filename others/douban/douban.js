@@ -14,7 +14,7 @@
 
 var ORIGIN = "https://m.douban.com";
 var SUGGEST_ORIGIN = "https://movie.douban.com";
-var VERSION = "1.1.4";
+var VERSION = "1.1.6";
 var UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36";
 
@@ -278,6 +278,21 @@ async function loadCollectionPage(ctx, input, name) {
   var out = { items: items };
   if (items.length > 0 && start + PAGE_SIZE < data.total) {
     out.next = { type: "page", page: page + 1 };
+  }
+  return out;
+}
+
+// Top250 用 list 样式展示：行副标题前缀名次；overview 直接用榜单接口自带的短评，不额外请求详情。
+async function loadTop250List(ctx, input) {
+  var out = await loadCollectionPage(ctx, input, "top250");
+  var page = pageNumber(input && input.page);
+  var start = (page - 1) * PAGE_SIZE;
+  for (var i = 0; i < out.items.length; i++) {
+    var item = out.items[i];
+    var subtitle = item.subtitle;
+    item.subtitle = "No." + (start + i + 1) + (subtitle ? " · " + subtitle : "");
+    // 榜单接口里 Top250 的 description 就是一句话短评，直接作为 list 样式的 overview。
+    if (!item.overview && item.description) item.overview = item.description;
   }
   return out;
 }
@@ -718,7 +733,8 @@ definePackage({
       template: "poster-ranked",
       families: ["small", "medium", "large"],
       header: "list",
-      ref: collectionRef("top250", "movie"),
+      // 用 custom source 与其余榜单区分：标题点击进入同包的 list 样式列表
+      ref: { source: "custom", id: "collection:top250", mediaType: "movie" },
       cache: { ttlSeconds: 21600 },
       placeholder: placeholderMovies,
       load: async function (ctx, input) {
@@ -851,6 +867,25 @@ definePackage({
         var out = { items: items };
         if (items.length > 0 && start + PAGE_SIZE < data.total) out.next = { page: page + 1 };
         return out;
+      },
+    },
+
+    /* Top250 全屏列表：list 样式，行副标题带名次。widget ref 用 custom source 与海报墙区分 */
+    {
+      type: "list",
+      id: "top250",
+      title: "豆瓣电影 Top250 列表",
+      style: "list",
+      accepts: { sources: ["custom"] },
+      // 列表导航栏的搜索框；与海报墙一样复用同包 search "search"
+      search: { id: "search" },
+      cache: { ttlSeconds: 21600 },
+      load: async function (ctx, input) {
+        var ref = (input && input.ref) || {};
+        if (String(ref.id || "") !== "collection:top250") {
+          return { items: [] };
+        }
+        return loadTop250List(ctx, input);
       },
     },
 

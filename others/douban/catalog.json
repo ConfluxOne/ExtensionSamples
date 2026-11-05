@@ -2,7 +2,7 @@
   "format": 1,
   "title": "豆瓣",
   "description": "豆瓣电影 / 剧集榜单组件、搜索与详情（数据来自 m.douban.com 与 movie.douban.com），全屏列表内可直接搜索",
-  "updated": "2026-11-04T05:30:00Z",
+  "updated": "2026-11-05T03:38:47Z",
   "packages": [
     {
       "id": "conflux.douban",
@@ -10,9 +10,9 @@
       "description": "正在热映、电影 Top250、一周口碑榜、热门电影、热门剧集、剧集口碑榜，以及豆瓣搜索与详情；全屏列表内可直接搜索。",
       "author": "Anonymous",
       "icon": "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/others/icons/douban.png",
-      "version": "1.1.4",
+      "version": "1.1.6",
       "engine": 1,
-      "changelog": "widget 支持 resolveTitle：剧集口碑榜的看板标题随所选榜单变化",
+      "changelog": "Top250 标题栏改为进入 list 样式列表，行副标题显示名次，overview 复用榜单短评",
       "types": [
         "widget",
         "search",

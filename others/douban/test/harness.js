@@ -740,6 +740,7 @@ var WIDGETS = [
     families: ["small", "medium", "large"],
     collection: "movie_top250",
     mediaType: "movie",
+    refSource: "custom",
     items: MOVIE_ITEMS,
     page2: MOVIE_PAGE2,
   },
@@ -799,7 +800,7 @@ loadExtension();
   await test("package metadata", function () {
     assertEq(pkg.id, "conflux.douban", "id");
     assertEq(pkg.title, "豆瓣", "title");
-    assertEq(pkg.version, "1.1.4", "version");
+    assertEq(pkg.version, "1.1.6", "version");
     var rules = pkg.requestRules || [];
     assertEq(rules.length, 1, "requestRules");
     assertEq(rules[0].host, "img*.doubanio.com", "requestRules host");
@@ -827,7 +828,7 @@ loadExtension();
     ["widget", "search", "list", "detail"].forEach(function (t) {
       assert(types.indexOf(t) >= 0, "missing extension type " + t);
     });
-    assertEq(pkg.extensions.length, 9, "extensions 数量（6 widget + search + list + detail）");
+    assertEq(pkg.extensions.length, 10, "extensions 数量（6 widget + search + 2 list + detail）");
   });
 
   await test("extension inventory matches the contract", function () {
@@ -842,7 +843,7 @@ loadExtension();
       );
       assertEq(widget.header, "list", w.id + ".header");
       assert(widget.ref, w.id + ".ref");
-      assertEq(widget.ref.source, "douban", w.id + ".ref.source");
+      assertEq(widget.ref.source, w.refSource || "douban", w.id + ".ref.source");
       assertEq(widget.ref.id, "collection:" + w.id, w.id + ".ref.id");
       assertEq(widget.ref.mediaType, w.mediaType, w.id + ".ref.mediaType");
       assert(typeof widget.load === "function", w.id + ".load");
@@ -873,6 +874,16 @@ loadExtension();
     assert(typeof list.load === "function", "list.load");
     assert(list.search && list.search.id === "search", "list.search.id 应指向同包 search");
     assert(ext("search", list.search.id), "list.search 指向的 search 扩展存在");
+
+    var top250List = ext("list", "top250");
+    assertEq(top250List.style, "list", "top250 list.style");
+    assertEq(
+      JSON.stringify((top250List.accepts || {}).sources || []),
+      JSON.stringify(["custom"]),
+      "top250 list.accepts.sources"
+    );
+    assert(typeof top250List.load === "function", "top250 list.load");
+    assert(top250List.search && top250List.search.id === "search", "top250 list.search.id 应指向同包 search");
 
     var detail = ext("detail", "main");
     assertEq(JSON.stringify((detail.accepts || {}).sources || []), JSON.stringify(["douban"]), "detail.accepts.sources");
@@ -1122,6 +1133,44 @@ loadExtension();
       assert(!second.next, "list 末页不应有 next");
     });
   }
+
+  await test("list top250 uses list style, prefixes rank and reuses collection brief", async function () {
+    mockCollection("movie_top250", MOVIE_ITEMS, MOVIE_PAGE2, TOTAL);
+    var list = ext("list", "top250");
+    assertEq(list.style, "list", "top250.style");
+    var ref = { source: "custom", id: "collection:top250", mediaType: "movie" };
+    var first = await list.load(ctx(), { ref: ref, params: {} });
+    assertEq(first.items.length, MOVIE_ITEMS.length, "第一页 items 长度");
+    assertEq(first.items[0].subtitle.indexOf("No.1"), 0, "第一条名次应为 No.1，实际: " + first.items[0].subtitle);
+    assertEq(first.items[1].subtitle.indexOf("No.2"), 0, "第二条名次应为 No.2");
+    assertEq(first.items[0].ref.source, "douban", "条目 ref 仍是 douban，详情可解析");
+    // overview 直接复用榜单接口自带的 description，不额外请求详情
+    assertEq(first.items[0].overview, "希望让人自由。", "第一条 overview 应来自榜单短评");
+    assertEq(first.items[1].overview, "风华绝代。", "第二条 overview 应来自榜单短评");
+    var detailRequests = requests.filter(function (r) {
+      return /^\/rexxar\/api\/v2\/(movie|tv)\//.test(r.path);
+    }).length;
+    assertEq(detailRequests, 0, "list 不应额外请求详情");
+    assert(first.next, "第一页应有 next");
+
+    var second = await list.load(ctx(), { ref: ref, params: {}, page: { page: 2 } });
+    assertEq(
+      second.items[0].subtitle.indexOf("No." + (PAGE_SIZE + 1)),
+      0,
+      "第二页第一条名次应为 No." + (PAGE_SIZE + 1) + "，实际: " + second.items[0].subtitle
+    );
+    assert(!second.next, "末页不应有 next");
+  });
+
+  await test("list top250 ignores other refs", async function () {
+    var res = await ext("list", "top250").load(ctx(), {
+      ref: { source: "custom", id: "collection:showing", mediaType: "movie" },
+      params: {},
+    });
+    assert(res && Array.isArray(res.items), "items 数组");
+    assertEq(res.items.length, 0, "非 top250 ref 返回空数组");
+    assertEq(requests.length, 0, "非 top250 ref 不应发起请求");
+  });
 
   await test("list ignores unknown ref ids", async function () {
     var res = await ext("list", "collection").load(ctx(), {
