@@ -11,6 +11,8 @@ Conflux 扩展包，包 ID：`conflux.hongguo.app`。
 
 relay 只负责**解析**，不下载、不解密、不转码。视频解密发生在 Conflux 的播放器进程里。
 
+> 注意：App 线路是**同源包**解析。只有从本包（`conflux.hongguo.app`）的 widget / 搜索打开的内容才会走本包的 playback；从旧包 `conflux.hongguo` 打开的内容仍然走旧包的官网公开线路。首页 widget 标题都带「· App」后缀，添加 widget 时请选这些。
+
 > 免责声明：仅供个人学习与研究。内容版权归权利人所有，请勿用于批量抓取或传播。
 
 ## 前提
@@ -119,7 +121,9 @@ Conflux 播放按钮
 
 ## 常见问题
 
+- **第 6 集以后没有播放资源**：先确认从新包的「· App」widget 打开；再确认 relay 在跑：
+  `curl http://127.0.0.1:8787/health`。旧包 `conflux.hongguo` 的卡片不会走 App 线路。
 - **relay 返回 503 / ANONYMOUS_LIMITED**：匿名设备额度用尽，relay 会自动 `resetDevice` 重试；仍失败时删除 `relay-data/anonymous.json` 再试。
 - **能显示线路但播放失败**：确认 Conflux 的播放核心是 CorePlayer（默认），不要用 Aether / mpv；并确认 App 版本已包含 `options.decryptionKey`。
-- **没有 App 线路，只有官网线路**：relay 没启动、地址/端口不对、token 不匹配，或包设置里关闭了「优先 App 线路」。
+- **没有 App 线路，只有官网线路**：relay 没启动、地址/端口不对、token 不匹配，或包设置里关闭了「优先 App 线路」。扩展调试页会出现「app playback」或「红果 App 线路 relay 无法访问 / HTTP xxx」日志。
 - **官网公开线路仍然只有前几集**：这是兜底路径，属于预期行为。

@@ -1105,33 +1105,44 @@ function relayPlaybackSources(data) {
   return sources;
 }
 
-async function resolveRelayPlayback(ctx, relayUrl, seriesId, episode, vid) {
+async function tryRelayPlayback(ctx, relayUrl, seriesId, episode, vid) {
+  var result = { sources: [], error: "" };
+  var headers = { "Accept": "application/json" };
+  var token = relayToken(ctx);
+  if (token) headers["X-Relay-Token"] = token;
+  var query = { series_id: seriesId, episode: String(episode) };
+  if (vid) query.vid = vid;
+
   var response;
   try {
-    var headers = { "Accept": "application/json" };
-    var token = relayToken(ctx);
-    if (token) headers["X-Relay-Token"] = token;
     response = await httpGet(ctx, relayUrl + "/resolve", {
       headers: headers,
-      query: { vid: vid, series_id: seriesId, episode: String(episode) },
+      query: query,
       timeoutMs: RELAY_TIMEOUT_MS,
     });
   } catch (error) {
-    console.warn("红果 App 线路 relay 不可用：" + describeError(error));
-    return [];
+    result.error = "relay 无法访问：" + describeError(error);
+    console.warn("红果 App 线路 " + result.error);
+    return result;
   }
   if (response.status !== 200) {
-    console.warn("红果 App 线路 relay 返回 HTTP " + response.status);
-    return [];
+    result.error = "relay 返回 HTTP " + response.status;
+    if (response.status === 401) result.error += "（检查 relayToken）";
+    console.warn("红果 App 线路 " + result.error);
+    return result;
   }
   var data = response.json;
   if (!data || typeof data !== "object") {
-    console.warn("红果 App 线路 relay 返回的不是 JSON");
-    return [];
+    result.error = "relay 返回的不是 JSON";
+    console.warn("红果 App 线路 " + result.error);
+    return result;
   }
-  var sources = relayPlaybackSources(data);
-  if (sources.length === 0) console.warn("红果 App 线路 relay 没有返回可用地址");
-  return sources;
+  result.sources = relayPlaybackSources(data);
+  if (result.sources.length === 0) {
+    result.error = "relay 没有返回可用地址";
+    console.warn("红果 App 线路 " + result.error);
+  }
+  return result;
 }
 
 // ========== playback handler ==========
@@ -1142,9 +1153,23 @@ async function playbackSources(ctx, input) {
   if (!seriesId) throw invalidParams("缺少红果短剧编号");
 
   var episode = positiveInt(input && input.episode) || 1;
+  var relayUrl = relayBase(ctx);
+  var relayError = "";
+
+  // 先让 relay 用 series_id + episode 解析；这样不依赖官网分集页，也能播全部分集。
+  if (relayUrl) {
+    var appAttempt = await tryRelayPlayback(ctx, relayUrl, seriesId, episode, "");
+    if (appAttempt.sources.length > 0) {
+      console.log("app playback", seriesId, episode, appAttempt.sources.length, "sources");
+      return appAttempt.sources;
+    }
+    relayError = appAttempt.error;
+  }
+
   var vids = await loadVidList(ctx, seriesId);
   if (vids.length === 0) {
     console.warn("红果短剧没有找到分集列表：" + seriesId);
+    if (relayError) throw unavailable("App 线路 relay 不可用，且官网分集页不可用：" + relayError);
     return [];
   }
   if (episode > vids.length) {
@@ -1154,14 +1179,14 @@ async function playbackSources(ctx, input) {
 
   var vid = vids[episode - 1];
 
-  // 优先使用 App 线路：relay 只返回 URL 和 content key，解密交给 Conflux CorePlayer。
-  var relayUrl = relayBase(ctx);
+  // series + episode 映射失败时，再用官网的 vid 重试一次 relay。
   if (relayUrl) {
-    var appSources = await resolveRelayPlayback(ctx, relayUrl, seriesId, episode, vid);
-    if (appSources.length > 0) {
-      console.log("app playback", seriesId, episode, appSources.length, "sources");
-      return appSources;
+    var vidAttempt = await tryRelayPlayback(ctx, relayUrl, seriesId, episode, vid);
+    if (vidAttempt.sources.length > 0) {
+      console.log("app playback", seriesId, episode, vidAttempt.sources.length, "sources (vid)");
+      return vidAttempt.sources;
     }
+    if (!relayError) relayError = vidAttempt.error;
   }
 
   // 兜底：官网公开线路，只覆盖前若干集。
@@ -1170,9 +1195,13 @@ async function playbackSources(ctx, input) {
     playback = await resolvePublicPlayback(ctx, vid);
   } catch (error) {
     console.warn("官网公开线路也不可用：" + describeError(error));
+  }
+  if (!playback) {
+    if (relayUrl) {
+      throw unavailable("App 线路 relay 没有返回播放地址（" + (relayError || "未知原因") + "），且这一集没有官网公开线路。请确认 relay.mjs 已启动、地址和令牌正确。");
+    }
     return [];
   }
-  if (!playback) return [];
   return [
     {
       id: "public",
@@ -1342,7 +1371,7 @@ definePackage({
   author: "Anonymous",
   site: "https://hongguoduanju.com",
   icon: "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/others/icons/hongguo.png",
-  version: "1.0.0",
+  version: "1.0.1",
   engine: 1,
   permissions: {
     // 后者是本地 relay 的前缀放行：http://127.0.0.1 可覆盖任意端口。
@@ -1375,7 +1404,7 @@ definePackage({
     {
       type: "widget",
       id: "home",
-      title: "红果热播",
+      title: "红果热播 · App",
       description: "红果短剧首页的热播推荐，可在实例里选择频道。",
       template: "poster-rail",
       families: ["extraLarge"],
@@ -1400,7 +1429,7 @@ definePackage({
     {
       type: "widget",
       id: "featured",
-      title: "红果精选",
+      title: "红果精选 · App",
       description: "红果短剧首页的焦点推荐，横向分页大海报。",
       template: "poster-pager",
       families: ["extraLarge"],
@@ -1413,7 +1442,7 @@ definePackage({
     {
       type: "widget",
       id: "ranking",
-      title: "红果热播榜",
+      title: "红果热播榜 · App",
       description: "红果短剧热播榜，可在实例里选择榜单。",
       template: "ranked-list",
       header: "list",
@@ -1439,7 +1468,7 @@ definePackage({
     {
       type: "widget",
       id: "browse",
-      title: "红果分类",
+      title: "红果分类 · App",
       description: "按真人剧、漫剧、漫画、AI 剧浏览红果短剧。",
       template: "poster-grid",
       header: "list",
@@ -1465,7 +1494,7 @@ definePackage({
     {
       type: "list",
       id: "browse",
-      title: "红果短剧列表",
+      title: "红果短剧列表 · App",
       description: "红果短剧的榜单与分类全屏列表。",
       style: "grid",
       accepts: { sources: ["custom"] },
@@ -1479,7 +1508,7 @@ definePackage({
     {
       type: "search",
       id: "main",
-      title: "红果短剧",
+      title: "红果短剧 · App",
       description: "搜索红果短剧。",
       cache: { ttlSeconds: 600 },
       search: async function (ctx, input) {
@@ -1489,7 +1518,7 @@ definePackage({
     {
       type: "detail",
       id: "main",
-      title: "红果短剧详情",
+      title: "红果短剧详情 · App",
       description: "读取红果短剧的标题、简介、评分、标签、演职员与全部剧集。",
       accepts: { sources: ["custom"] },
       cache: { ttlSeconds: 600 },
@@ -1500,7 +1529,7 @@ definePackage({
     {
       type: "playback",
       id: "main",
-      title: "红果短剧线路",
+      title: "红果 App 线路",
       description: "优先通过本地 relay 解析 App 线路并用 decryptionKey 解密，relay 不可用时回退官网公开线路。",
       accepts: { sources: ["custom"] },
       cache: { ttlSeconds: 0 },
