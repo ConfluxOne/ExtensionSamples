@@ -7,6 +7,7 @@
 //   widget   rail     热门直播：按分区横向展示直播间（backdrop-rail）
 //   widget   areas    直播分区：分区入口海报墙（poster-grid）
 //   list     area     分区 / 二级分区 / 直播间列表（grid，支持翻页）
+//   list     rail     热门直播标题栏进入的横版卡片网格（backdrop-grid）
 //   search   live     直播搜索
 //   detail   room     直播间详情，清晰度作为第 1 季的「选集」
 //   playback room     按所选清晰度返回 HLS / FLV 直播线路
@@ -1403,7 +1404,7 @@ definePackage({
   author: "Anonymous",
   site: "https://live.bilibili.com",
   icon: "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/others/icons/bilibili-live.png",
-  version: "1.0.5",
+  version: "1.0.6",
   engine: 1,
   permissions: {
     network: ["https://api.live.bilibili.com", "https://api.bilibili.com"],
@@ -1436,8 +1437,9 @@ definePackage({
       description: "按分区横向展示正在直播的房间，点卡片看详情，点播放按钮直接起播。",
       template: "backdrop-rail",
       families: ["extraLarge"],
-      header: "list",
-      ref: { source: "custom", id: "area:widget" },
+      headerIntent: "list",
+      // 带 mediaType 的 ref 只命中下面的 backdrop-grid 列表；分区条目仍走 grid 列表
+      ref: { source: "custom", id: "area:widget", mediaType: "movie" },
       params: [
         {
           name: "area",
@@ -1590,6 +1592,26 @@ definePackage({
         ],
       },
       load: widgetAreasLoad,
+    },
+
+    /* 热门直播标题栏：16:10 横版卡片网格 */
+    {
+      type: "list",
+      id: "rail",
+      title: "热门直播（横版网格）",
+      description: "热门直播标题栏点击后的横版卡片网格，按实例选择的分区加载直播间。",
+      style: "backdrop-grid",
+      accepts: { sources: ["custom"], mediaTypes: ["movie"] },
+      // 列表导航栏的搜索框；关键词走同包 search "live"
+      search: { id: "live" },
+      cache: { ttlSeconds: 300 },
+      load: async function (ctx, input) {
+        var ref = (input && input.ref) || {};
+        if (safeString(ref.id) !== "area:widget") {
+          return { items: [] };
+        }
+        return listAreaLoad(ctx, input);
+      },
     },
     {
       type: "list",
