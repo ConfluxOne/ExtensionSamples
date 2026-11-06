@@ -16,6 +16,8 @@
 //       安装后到首页 SuperBoard 添加「热门直播」或「直播分区」小组件。
 //
 // 说明与已知限制：
+//   - 直播间条目（widget / 列表）声明 intent "play"，点击直接起播；搜索结果的条目仍进
+//     详情页，可以选清晰度。
 //   - 运行时不提供 WebSocket，直播实时弹幕无法接入，因此本包不含 danmu 扩展。
 //     原脚本的 startDanmaku / stopDanmaku 依赖 B 站弹幕 WebSocket 二进制协议，
 //     普通 HTTP 也不提供带时间轴的直播弹幕历史。
@@ -414,7 +416,8 @@ function roomGenre(raw) {
 }
 
 // index/getList、area/getRoomList、search 的房间字段名不完全一致，统一在这里映射。
-function roomListItem(raw) {
+// `intent` 默认 "play"：widget 和列表里的直播间点击直接起播，不进详情。
+function roomListItem(raw, intent) {
   var roomId = safeString(raw.roomid || raw.room_id || raw.id);
   var cover = roomCover(raw);
   var images = { backdrop: cover, cover: cover, poster: cover };
@@ -424,7 +427,7 @@ function roomListItem(raw) {
     subtitle: plainText(raw.uname),
     genre: roomGenre(raw),
     images: images,
-    intent: "detail",
+    intent: intent || "play",
   };
 }
 
@@ -1081,7 +1084,8 @@ async function searchLive(ctx, input) {
     if (!raw || typeof raw !== "object") {
       continue;
     }
-    var item = roomListItem(raw);
+    // 搜索结果的直播间仍进详情页，用户可以在那里选清晰度。
+    var item = roomListItem(raw, "detail");
     if (!item.ref || !item.ref.id) {
       continue;
     }
@@ -1326,7 +1330,7 @@ async function detailRoomLoad(ctx, input) {
         if (!rawId || rawId === roomId) {
           continue;
         }
-        related.push(roomListItem(rawRoom));
+        related.push(roomListItem(rawRoom, "detail"));
       }
     }
   }
@@ -1404,7 +1408,7 @@ definePackage({
   author: "Anonymous",
   site: "https://live.bilibili.com",
   icon: "https://raw.githubusercontent.com/ConfluxOne/ExtensionSamples/main/others/icons/bilibili-live.png",
-  version: "1.0.6",
+  version: "1.0.7",
   engine: 1,
   permissions: {
     network: ["https://api.live.bilibili.com", "https://api.bilibili.com"],
